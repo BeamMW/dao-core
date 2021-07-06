@@ -1,3 +1,3 @@
-#add_test_snippet(shaders_test bvm ethash_utils)
+add_test_snippet(shader_test bvm beam)
 
 

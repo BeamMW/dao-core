@@ -3,9 +3,13 @@ project(beam-dao-core)
 
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/beam/cmake" ${CMAKE_MODULE_PATH})
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+include(AddTest)
 include_directories(beam/bvm)
 
-if(NOT BEAM_TESTS_ENABLED)
+if(NOT BEAM_SHADER_TESTS_ENABLED)
 
     set(CMAKE_EXECUTABLE_SUFFIX .wasm)
 
@@ -23,5 +27,9 @@ if(NOT BEAM_TESTS_ENABLED)
 
     add_subdirectory(shaders)
 else()
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+    set(BEAM_WALLET_CLIENT_LIBRARY TRUE)
+    set(BEAM_TESTS_ENABLED FALSE)
+    add_subdirectory(beam)
     add_subdirectory(unittests)
 endif()
