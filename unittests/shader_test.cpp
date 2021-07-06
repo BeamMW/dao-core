@@ -28,7 +28,7 @@ namespace Shaders {
 #include "Shaders/common.h"
 
 #include "../shaders/contract.h"
-#include "contract_sid.h"
+
 
 	template <bool bToShader> void Convert(DemoXdao::UpdPosFarming& x) {
 		ConvertOrd<bToShader>(x.m_Beam);

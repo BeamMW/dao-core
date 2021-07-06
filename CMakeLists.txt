@@ -21,13 +21,15 @@ set(BEAM_CLANG_OPTIONS
 function (add_shader target_name kind)
     add_custom_command(
         OUTPUT ${kind}.wasm
+        COMMAND echo // SID > ${kind}_sid.i
         COMMAND clang 
                 --target=wasm32
                 -I ${PROJECT_SOURCE_DIR}/beam/bvm 
+                -I${CMAKE_CURRENT_BINARY_DIR}
                 ${BEAM_CLANG_OPTIONS} 
                 ${PROJECT_SOURCE_DIR}/shaders/${kind}.cpp --output ${kind}.wasm
         COMMENT "Building shader..."
-        DEPENDS ${PROJECT_SOURCE_DIR}/shaders/${kind}.cpp
+        DEPENDS ${PROJECT_SOURCE_DIR}/shaders/${kind}.cpp ${PROJECT_SOURCE_DIR}/shaders/${kind}.h
         VERBATIM
     )
     add_custom_target(
@@ -48,6 +50,7 @@ if(NOT BEAM_SHADER_TESTS_ENABLED)
 
     set(BEAM_CLANG_OPTIONS
         -O3 
+        -Os
         -std=c++17 
         -flto
         -fno-rtti 
@@ -61,7 +64,8 @@ if(NOT BEAM_SHADER_TESTS_ENABLED)
     add_subdirectory(shaders)
 else()
     #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-
+    set(BEAM_BVM_ONLY TRUE)
+    set(BEAM_ATOMIC_SWAP_SUPPORT FALSE)
     set(BEAM_WALLET_CLIENT_LIBRARY TRUE)
     set(BEAM_TESTS_ENABLED FALSE)
     add_subdirectory(beam)
