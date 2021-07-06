@@ -9,6 +9,39 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 include(AddTest)
 include_directories(beam/bvm)
 
+set(BEAM_CLANG_OPTIONS
+        -O3 
+        -std=c++17 
+        -flto
+        -fno-rtti 
+        -fno-exceptions
+        -nostdlib 
+        -Wl,--export-dynamic,--no-entry,--allow-undefined)
+
+function (add_shader target_name kind)
+    add_custom_command(
+        OUTPUT ${kind}.wasm
+        COMMAND clang 
+                --target=wasm32
+                -I ${PROJECT_SOURCE_DIR}/beam/bvm 
+                ${BEAM_CLANG_OPTIONS} 
+                ${PROJECT_SOURCE_DIR}/shaders/${kind}.cpp --output ${kind}.wasm
+        COMMENT "Building shader..."
+        DEPENDS ${PROJECT_SOURCE_DIR}/shaders/${kind}.cpp
+        VERBATIM
+    )
+    add_custom_target(
+        ${kind}_target 
+        ALL
+        DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${kind}.wasm
+    )
+    add_dependencies(
+        ${target_name}
+        ${kind}_target
+    )
+
+endfunction()
+
 if(NOT BEAM_SHADER_TESTS_ENABLED)
 
     set(CMAKE_EXECUTABLE_SUFFIX .wasm)
@@ -27,7 +60,8 @@ if(NOT BEAM_SHADER_TESTS_ENABLED)
 
     add_subdirectory(shaders)
 else()
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+    #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+
     set(BEAM_WALLET_CLIENT_LIBRARY TRUE)
     set(BEAM_TESTS_ENABLED FALSE)
     add_subdirectory(beam)

@@ -1,4 +1,4 @@
-// Copyright 2018 The Beam Team
+// Copyright 2018-2021 The Beam Team
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ namespace Shaders {
 #include "Shaders/common.h"
 
 #include "../shaders/contract.h"
-
+#include "contract_sid.h"
 
 	template <bool bToShader> void Convert(DemoXdao::UpdPosFarming& x) {
 		ConvertOrd<bToShader>(x.m_Beam);
