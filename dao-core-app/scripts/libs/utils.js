@@ -56,6 +56,10 @@ export default class Utils {
         this.getById(id).classList.add("hidden");
     }
 
+    static numberWithCommas(x) {
+        return x.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
     static callApi(callid, method, params) {
         let request = {
             "jsonrpc": "2.0",
