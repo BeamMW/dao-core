@@ -4,6 +4,7 @@
     padding: 20px;
     background-color: rgba(0, 246, 210, .1);
     border-radius: 10px;
+    height: 357px;
 }
 
 .governance__title {
@@ -27,7 +28,7 @@
 .governance__separator {
     height: 1px;
     width: 100%;
-    margin-top: 20px;
+    margin: auto 0;
     background-color: rgba(255, 255, 255, 0.1);
 }
 
@@ -36,6 +37,5 @@
     font-size: 16px;
     color: #00f6d2;
     cursor: pointer;
-    margin-top: 20px;
     width: 110px;
 }

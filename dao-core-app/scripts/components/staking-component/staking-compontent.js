@@ -1,4 +1,5 @@
 import * as consts from "./../../consts/consts.js";
+import Utils from "./../../libs/utils.js";
 
 class StakingComponent extends HTMLElement {
   componentParams = {
@@ -16,7 +17,9 @@ class StakingComponent extends HTMLElement {
     const FARMED = 
       `<div class="farmed-value">
           <img class="farmed-value__beamx-icon" src="./icons/icon-beamx.png"/>
-          <span class="farmed-value__beamx-amount" id="beamx-value">${this.componentParams.beamxStr} BEAMX</span>
+          <span class="farmed-value__beamx-amount" id="beamx-value">
+            ${Utils.numberWithCommas(this.componentParams.beamxStr)} BEAMX
+          </span>
       </div>
       <div class="farmed-claim" id="staking-claim-rewards">
           <img class="farmed-claim__icon" src="./icons/icon-star.svg">
@@ -74,7 +77,7 @@ class StakingComponent extends HTMLElement {
                           <img class="total-container__icon" src="./icons/icon-beam.svg">
                           <div class="total-container__value">
                               <div class="total-container__value__beam" id="beam-value">
-                                ${this.componentParams.beamStr} BEAM
+                                ${Utils.numberWithCommas(this.componentParams.beamStr)} BEAM
                               </div>
                               <div class="total-container__value__usd">100 USD</div>
                           </div>
@@ -85,7 +88,6 @@ class StakingComponent extends HTMLElement {
                           <img class="deposit__icon" src="./icons/icon-send.svg"/>
                           <span class="deposit__text">deposit</span>
                       </div>
-                      <div class="controls-separator"></div>
                       <div class="withdraw-control" id="withdraw">
                           <img class="withdraw__icon" src="./icons/icon-receive.svg"/>
                           <span class="withdraw__text">withdraw</span>
@@ -150,21 +152,15 @@ class StakingComponent extends HTMLElement {
   }
   
   attributeChangedCallback(name, oldValue, newValue) {
-    let value = '';
-    switch(name) {
-      case 'beam-value':
-        this.componentParams.beam = newValue;
-        value = Big(newValue).div(consts.GLOBAL_CONSTS.GROTHS_IN_BEAM);
-        this.componentParams.beamStr = value.toFixed();
-        this.render();
-        break;
-      case 'beamx-value':
-        this.componentParams.beamx = newValue;
-        value = Big(newValue).div(consts.GLOBAL_CONSTS.GROTHS_IN_BEAM);
-        this.componentParams.beamxStr = value.toFixed();
-        this.render();
-        break;
+    let value = Big(newValue).div(consts.GLOBAL_CONSTS.GROTHS_IN_BEAM);
+    if (name === 'beam-value') {
+      this.componentParams.beam = newValue;
+      this.componentParams.beamStr = value.toFixed(2);
+    } else if (name === 'beamx-value') {
+      this.componentParams.beamx = newValue;
+      this.componentParams.beamxStr = value.toFixed(2);
     }
+    this.render();
   }
 
   
