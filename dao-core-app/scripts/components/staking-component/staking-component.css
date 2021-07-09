@@ -1,0 +1,257 @@
+.staking {
+    display: flex;
+    flex-direction: column;
+    z-index: 1;
+}
+
+.staking-empty-container {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+}
+
+.staking-content {
+    padding: 20px;
+}
+
+.staking__header {
+    padding: 20px;
+    height: 114px;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.staking__header__info {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: row;
+}
+
+.staking-empty {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    flex: auto;
+}
+
+.staking-empty__text {
+    margin-top: 30px;
+    opacity: 0.5;
+    font-family: SFProDisplay;
+    font-size: 16px;
+    font-style: italic;
+    color: #ffffff;
+}
+
+.staking-empty__deposit-button {
+    background-color: #da68f5;
+    margin-top: 20px;
+}
+
+.info-tvl {
+    display: flex;
+    flex-direction: column;
+}
+
+.info-tvl__value {
+    margin-top: 4px;
+    font-size: 20px;
+    font-weight: bold;
+    color: #ffffff;
+}
+
+.info-title {
+    opacity: 0.5;
+    font-size: 12px;
+    color: #ffffff;
+}
+
+.info-arp-y {
+    margin-left: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.info-arp-w {
+    margin-left: 29px;
+    display: flex;
+    flex-direction: column;
+}
+
+.info-arp-w__value,
+.info-arp-y__value {
+    margin-top: 10px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #ffffff;
+}
+
+.staking__deposit {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.staking__deposit__total {
+    display: flex;
+    flex-direction: column;
+}
+
+.staking__deposit__controls {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.total-container {
+    display: flex;
+    flex-direction: row;
+    margin-top: 5px;
+}
+
+.total-container__icon {
+    width: 20px;
+    height: 20px;
+}
+
+.total-container__value {
+    display: flex;
+    flex-direction: column;
+    margin-left: 10px;
+}
+
+.total-container__value__beam {
+    font-size: 14px;
+    font-weight: bold;
+    color: #ffffff;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    max-width: 160px;
+    white-space: nowrap;
+}
+
+.total-container__value__usd {
+    opacity: 0.5;
+    margin-top: 3px;
+    font-size: 12px;
+    color: #ffffff;
+}
+
+.deposit-control {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    user-select: none;
+    z-index: 10;
+    cursor: pointer;
+}
+
+.deposit__icon,
+.withdraw__icon {
+    width: 16px;
+    height: 16px;
+}
+
+.deposit__text {
+    margin-left: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #da68f5;
+}
+
+.controls-separator {
+    width: 1px;
+    height: 16px;
+    margin-left: 20px;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.withdraw-control {
+    margin-left: 20px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    user-select: none;
+    z-index: 10;
+    cursor: pointer;
+}
+
+.withdraw__text {
+    margin-left: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #0bccf7;
+}
+
+.staking__separator {
+    height: 1px;
+    margin: 20px 0;
+    width: 100%;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.staking__farmed {
+    display: flex;
+    flex-direction: column;
+}
+
+.staking__farmed__container {
+    margin-top: 8px;
+    display: flex;
+    flex-direction: row;
+}
+
+.farmed-value {
+    display: flex;
+    flex-direction: row;
+}
+
+.farmed-empty-text {
+    opacity: 0.5;
+    font-size: 16px;
+    font-style: italic;
+    color: #ffffff;
+}
+
+.farmed-value__beamx-icon {
+    width: 20px;
+    height: 20px;
+}
+
+.farmed-value__beamx-amount {
+    font-size: 14px;
+    margin-left: 10px;
+    color: #ffffff;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    max-width: 160px;
+    white-space: nowrap;
+}
+
+.farmed-claim{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-left: auto;
+    margin-right: 83px;
+    user-select: none;
+    cursor: pointer;
+}
+
+.farmed-claim__icon {
+    width: 16px;
+    height: 15px;
+}
+
+.farmed-claim__text {
+    font-size: 14px;
+    margin-left: 8px;
+    font-weight: bold;
+    color: #00f6d2;
+    margin-bottom: 1px;
+}

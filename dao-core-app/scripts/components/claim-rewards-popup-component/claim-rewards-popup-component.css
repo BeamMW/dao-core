@@ -1,0 +1,27 @@
+.popup__value.claim-rewards {
+    margin-top: 15px;
+}
+
+.claim-rewards-value {
+    font-size: 14px;
+    line-height: 1.29;
+    text-align: center;
+    color: #ffffff;
+}
+
+.claim-rewards-value .bold {
+    font-weight: bold;
+}
+
+.popup__content__controls.claim-controls {
+    margin-top: 30px;
+}
+
+.container__main__controls__confirm {
+    margin-left: 30px;
+    background-color: #00f6d2;
+}
+
+.confirm-text {
+    color: #032e49;
+}

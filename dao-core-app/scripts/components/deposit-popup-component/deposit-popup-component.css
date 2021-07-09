@@ -1,0 +1,119 @@
+.popup .popup__content.deposit-tmpl {
+    padding: 10px;
+    display: flex;
+    flex-direction: row;
+    width: 740px;
+}
+
+.deposit-area {
+    display: flex;
+    flex-direction: column;
+    width: 371px;
+    border-radius: 10px;
+    padding: 20px 20px 24px 10px;
+    background-color: rgba(255, 255, 255, .1);
+}
+
+.calc-area {
+    width: calc(100% - 371px);
+    display: flex;
+    flex-direction: column;
+    padding: 20px 20px 30px 30px;
+}
+
+.area-header {
+    display: flex;
+    align-self: center;
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+    color: #ffffff;
+}
+
+.deposit-area__input {
+    margin-top: 20px;
+    height: 45px;
+    width: 100%;
+    border-radius: 10px;
+    background-color: rgba(255, 255, 255, .05);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.deposit-area__input__elem {
+    background: rgba(255, 255, 255, 0);
+    border: none;
+    font-size: 24px;
+    resize: none;
+    color: #da68f5;
+    height: 100%;
+    padding: 0;
+    border-radius: 10px;
+    padding: 8px;
+}
+
+.deposit-area__input__elem:focus {
+    outline-width: 0;
+    color: #da68f5;
+}
+
+.deposit-area__input__elem::placeholder {
+    color: #da68f5;
+}
+
+.deposit-area__input__text {
+    margin-right: 8px;
+    font-size: 16px;
+    color: #ffffff;
+}
+
+.deposit-area__rate {
+    margin-left: 8px;
+    margin-top: 4px;
+    opacity: 0.5;
+    font-size: 12px;
+    color: #ffffff;
+}
+
+.deposit-area__fee {
+    margin-top: 20px;
+    margin-left: 8px;
+    display: flex;
+    flex-direction: row;
+}
+
+.deposit-area__fee__title {
+    opacity: 0.5;
+    font-size: 12px;
+    color: #ffffff;
+}
+
+.deposit-area__fee__value {
+    display: flex;
+    flex-direction: column;
+    margin-left: 10px;
+}
+
+.deposit-area__fee__value__beam {
+    font-size: 14px;
+    font-weight: 500;
+    color: #da68f5;
+}
+
+.deposit-area__fee__value__rate {
+    opacity: 0.5;
+    font-size: 12px;
+    color: #ffffff;
+}
+
+.deposit-area__controls {
+    margin-top: 45px;
+    display: flex;
+    justify-content: center;
+}
+
+.deposit-area__controls__deposit {
+    background-color: #da68f5;
+    margin-left: 30px;
+}
