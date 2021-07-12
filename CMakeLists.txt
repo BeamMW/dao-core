@@ -11,6 +11,7 @@ include_directories(beam/bvm)
 
 set(BEAM_CLANG_OPTIONS
         -O3 
+        -Os
         -std=c++17 
         -flto
         -fno-rtti 
@@ -47,16 +48,6 @@ endfunction()
 if(NOT BEAM_SHADER_TESTS_ENABLED)
 
     set(CMAKE_EXECUTABLE_SUFFIX .wasm)
-
-    set(BEAM_CLANG_OPTIONS
-        -O3 
-        -Os
-        -std=c++17 
-        -flto
-        -fno-rtti 
-        -fno-exceptions
-        -nostdlib 
-        -Wl,--export-dynamic,--no-entry,--allow-undefined)
 
     string (REPLACE ";" " " BEAM_CLANG_OPTIONS_STR "${BEAM_CLANG_OPTIONS}")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${BEAM_CLANG_OPTIONS_STR}")
