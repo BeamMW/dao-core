@@ -6,7 +6,8 @@ class StakingComponent extends HTMLElement {
     beam: 0,
     beamx: 0,
     beamxStr: '0',
-    beamStr: '0'
+    beamStr: '0',
+    rate: 0
   }
 
   constructor() {
@@ -18,7 +19,7 @@ class StakingComponent extends HTMLElement {
       `<div class="farmed-value">
           <img class="farmed-value__beamx-icon" src="./icons/icon-beamx.png"/>
           <span class="farmed-value__beamx-amount" id="beamx-value">
-            ${Utils.numberWithCommas(this.componentParams.beamxStr)} BEAMX
+            ${Utils.numberWithSpaces(this.componentParams.beamxStr)} BEAMX
           </span>
       </div>
       <div class="farmed-claim" id="staking-claim-rewards">
@@ -33,7 +34,7 @@ class StakingComponent extends HTMLElement {
       `<div class="staking-empty-container">
           <div class="container__header">STAKING</div>
           <div class="staking-empty">
-              <div class="staking-empty__text">Deposit your BEAMs and get BEAMXs</div>
+              <div class="staking-empty__text">Deposit your BEAM and get BEAMX</div>
               <div>
                   <button class="staking-empty__deposit-button ui-button" id="empty-deposit">
                       <span class="ui-button__inner-wrapper">
@@ -46,6 +47,9 @@ class StakingComponent extends HTMLElement {
               </div>
           </div>
       </div>`;
+    
+    const TEMPLATE_LOADING = 
+      `<div class="staking" id="staking-component"></div>`;
 
     const TEMPLATE = 
       `<div class="staking" id="staking-component">
@@ -53,19 +57,23 @@ class StakingComponent extends HTMLElement {
             <div class="container__header">STAKING</div>
             <div class="staking__header__info">
               <div class="info-tvl">
-                <div class="info-title">TVL</div>
-                <div class="info-tvl__value">1 000 000 USD</div>
+                <div class="info-title">Total value locked</div>
+                <div class="info-tvl__value">1 000 000 BEAM</div>
+                <div class="info-tvl__rate">${
+                  this.componentParams.rate > 0 ? Utils.numberWithSpaces(new Big(1000000)
+                  .times(this.componentParams.rate).toFixed(2)) + ' USD' : ""
+                }</div>
               </div>
               <div class="info-arp-y">
-                <div class="info-title">Min APR yearly</div>
-                <div class="info-arp-y__value">12%</div>
+                <div class="info-title">Yearly reward</div>
+                <div class="info-arp-y__value">10-14 BEAMX</div>
               </div>
               <div class="info-arp-w">
-                <div>
-                  <span class="info-title">Min APR weekly</span>
-                  <span ></span>
+                <div class="info-arp-w__container">
+                  <span class="info-title">Weekly reward</span>
+                  <img class="info-arp-w__container__icon" src="./icons/icon-info.svg" />
                 </div>
-                <div class="info-arp-w__value">0.23%</div>
+                <div class="info-arp-w__value">0.23-0.67 BEAMX</div>
               </div>
             </div>
           </div>
@@ -77,9 +85,13 @@ class StakingComponent extends HTMLElement {
                           <img class="total-container__icon" src="./icons/icon-beam.svg">
                           <div class="total-container__value">
                               <div class="total-container__value__beam" id="beam-value">
-                                ${Utils.numberWithCommas(this.componentParams.beamStr)} BEAM
+                                ${Utils.numberWithSpaces(this.componentParams.beamStr)} BEAM
                               </div>
-                              <div class="total-container__value__usd">100 USD</div>
+                              <div class="total-container__value__usd">${
+                                this.componentParams.rate > 0 && this.componentParams.beam > 0 ? 
+                                  Utils.numberWithSpaces(new Big(this.componentParams.beamStr)
+                                  .times(this.componentParams.rate).toFixed(2)) + ' USD' : ""
+                              }</div>
                           </div>
                       </div>
                   </div>
@@ -104,7 +116,7 @@ class StakingComponent extends HTMLElement {
           </div>
       </div>`;
 
-    return this.componentParams.beamx > 0 || this.componentParams.beam > 0 ?  TEMPLATE : TEMPLATE_EMPTY;
+    return TEMPLATE_EMPTY;
   } 
 
   render() {
@@ -159,13 +171,17 @@ class StakingComponent extends HTMLElement {
     } else if (name === 'beamx-value') {
       this.componentParams.beamx = newValue;
       this.componentParams.beamxStr = value.toFixed(2);
+    } else if (name === 'loaded') {
+      this.componentParams.loaded = newValue;
+    } else if (name === 'rate') {
+      this.componentParams.rate = newValue;
     }
     this.render();
   }
 
   
   static get observedAttributes() {
-    return ['beam-value', 'beamx-value'];
+    return ['beam-value', 'beamx-value', 'loaded', 'rate'];
   }
 }
 

@@ -8,6 +8,10 @@ const TIMEOUT = 3000;
 class DaoCore {
     constructor() {
         this.timeout = undefined;
+        this.rate = {
+            value: 0,
+            loaded: false
+        }
         this.pluginData = {
             inTransaction: false,
             locked_demoX: 0,
@@ -21,6 +25,27 @@ class DaoCore {
         $('claim-rewards-popup-component').hide();
         $('deposit-popup-component').hide();
         $('withdraw-popup-component').hide();
+
+        this.getRate();
+        setInterval(() => {
+            this.getRate();
+        }, 30000);
+    }
+
+    getRate = () => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', 'https://api.coingecko.com/api/v3/simple/price?ids=beam&vs_currencies=usd');
+        xhr.send();
+        xhr.onload = () => {
+            if (xhr.status === 200) {
+                const response = JSON.parse(xhr.response);
+                if (response.beam !== undefined && response.beam.usd !== undefined) {
+                    this.rate.value = response.beam.usd;
+                    this.rate.loaded = true;
+                    console.log(this.rate.value);
+                }
+            }
+        };
     }
 
     setError = (errmsg) => {
@@ -134,17 +159,20 @@ class DaoCore {
                     throw "Failed to farm view";
                 }
 
+                if (!this.pluginData.mainLoaded) {
+                    this.pluginData.mainLoaded = true;
+                }
+
                 const stakingComponent = $('staking-component');
                 stakingComponent.attr('beam-value', shaderOut.user.beams_locked);
                 stakingComponent.attr('beamx-value', shaderOut.user.beamX);
+                stakingComponent.attr('loaded', this.pluginData.mainLoaded | 0);
+                stakingComponent.attr('rate', this.rate.loaded ? this.rate.value : 0);
                 $('governance-component').attr('emission', shaderOut.farming.emission);
                 
                 this.pluginData.locked_demoX = shaderOut.user.beamX;
                 this.pluginData.locked_beams = shaderOut.user.beams_locked;
                 this.loadPreallocated();
-                if (!this.pluginData.mainLoaded) {
-                    this.pluginData.mainLoaded = true;
-                }
             } else if (apiCallId === "farm_update" || apiCallId === "prealloc_withdraw") {
                 if (apiResult.raw_data === undefined || apiResult.raw_data.length < 1) {
                     throw 'Failed to load raw data';

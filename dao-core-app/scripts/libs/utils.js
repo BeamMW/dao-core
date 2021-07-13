@@ -60,6 +60,10 @@ export default class Utils {
         return x.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     }
 
+    static numberWithSpaces(x) {
+        return x.replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+    }
+
     static callApi(callid, method, params) {
         let request = {
             "jsonrpc": "2.0",
