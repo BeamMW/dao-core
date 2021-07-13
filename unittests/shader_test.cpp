@@ -40,6 +40,7 @@ namespace Shaders {
 
 
 	namespace DemoXdao {
+#include "../shaders/contract_sid.i"
 #include "../shaders/contract.cpp"
 	}
 
