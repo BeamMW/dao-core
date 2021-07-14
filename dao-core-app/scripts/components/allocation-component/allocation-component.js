@@ -19,6 +19,10 @@ class AllocationComponent extends HTMLElement {
       super();
     }
 
+    formateValue(value) {
+        return parseFloat(value.toFixed(2)).toString();
+    }
+
     getTemplate() {
       const TEMPLATE =
       `<div class="allocation">
@@ -28,7 +32,7 @@ class AllocationComponent extends HTMLElement {
                 <div class="allocation__stats__allocated">
                     <div class="allocation-title">Allocated</div>
                     <div class="allocated-value">
-                        ${Utils.numberWithCommas(consts.GLOBAL_CONSTS.INVESTOR_ALLOCATED.toString())} BEAMX
+                        ${Utils.numberWithCommas(this.componentParams.allocatedStr)} BEAMX
                     </div>
                 </div>
                 <div class="allocation-total-temporary">
@@ -109,23 +113,26 @@ class AllocationComponent extends HTMLElement {
         let value = Big(newValue).div(consts.GLOBAL_CONSTS.GROTHS_IN_BEAM);
         if (name === 'total') {
             this.componentParams.total = newValue;
-            this.componentParams.totalStr = value.toFixed(2);
+            this.componentParams.totalStr = this.formateValue(value);
         } else if (name === 'avail_total') {
             this.componentParams.available = newValue;
-            this.componentParams.availableStr = value.toFixed(2);
+            this.componentParams.availableStr = this.formateValue(value);
         } else if (name === 'received') {
             this.componentParams.distributed = newValue;
-            this.componentParams.distributedStr = value.toFixed(2);
+            this.componentParams.distributedStr = this.formateValue(value);
         } else if (name === 'avail_remaining') {
             this.componentParams.locked = newValue;
-            this.componentParams.lockedStr = value.toFixed(2);
+            this.componentParams.lockedStr = this.formateValue(value);
+        } else if (name === 'allocated') {
+            this.componentParams.allocated = newValue;
+            this.componentParams.allocatedStr = this.formateValue(value);
         }
         this.render();
     }
   
     
     static get observedAttributes() {
-      return ['total', 'received', 'avail_total', 'avail_remaining'];
+      return ['total', 'received', 'avail_total', 'avail_remaining', 'allocated'];
     }
   }
 

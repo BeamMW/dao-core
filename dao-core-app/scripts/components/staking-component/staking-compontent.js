@@ -7,11 +7,23 @@ class StakingComponent extends HTMLElement {
     beamx: 0,
     beamxStr: '0',
     beamStr: '0',
-    rate: 0
+    rate: 0,
+    beamTotalLockedStr: '0',
+    beamTotalLocked: 0,
   }
 
   constructor() {
     super();
+  }
+
+  formateValue(value) {
+    return parseFloat(value.toFixed(2)).toString();
+  }
+
+  getRateStr(value) {
+    return this.componentParams.rate > 0 
+      ? Utils.numberWithSpaces(this.formateValue(new Big(value).times(this.componentParams.rate))) + ' USD'
+      : '';
   }
 
   getTemplate() {
@@ -58,11 +70,10 @@ class StakingComponent extends HTMLElement {
             <div class="staking__header__info">
               <div class="info-tvl">
                 <div class="info-title">Total value locked</div>
-                <div class="info-tvl__value">1 000 000 BEAM</div>
-                <div class="info-tvl__rate">${
-                  this.componentParams.rate > 0 ? Utils.numberWithSpaces(new Big(1000000)
-                  .times(this.componentParams.rate).toFixed(2)) + ' USD' : ""
-                }</div>
+                <div class="info-tvl__value">
+                  ${ Utils.numberWithSpaces(this.componentParams.beamTotalLockedStr) } BEAM
+                </div>
+                <div class="info-tvl__rate">${ this.getRateStr(this.componentParams.beamTotalLockedStr) }</div>
               </div>
               <div class="info-arp-y">
                 <div class="info-title">Yearly reward</div>
@@ -85,13 +96,11 @@ class StakingComponent extends HTMLElement {
                           <img class="total-container__icon" src="./icons/icon-beam.svg">
                           <div class="total-container__value">
                               <div class="total-container__value__beam" id="beam-value">
-                                ${Utils.numberWithSpaces(this.componentParams.beamStr)} BEAM
+                                ${ Utils.numberWithSpaces(this.componentParams.beamStr) } BEAM
                               </div>
-                              <div class="total-container__value__usd">${
-                                this.componentParams.rate > 0 && this.componentParams.beam > 0 ? 
-                                  Utils.numberWithSpaces(new Big(this.componentParams.beamStr)
-                                  .times(this.componentParams.rate).toFixed(2)) + ' USD' : ""
-                              }</div>
+                              <div class="total-container__value__usd">
+                              ${ this.getRateStr(this.componentParams.beamStr) }
+                              </div>
                           </div>
                       </div>
                   </div>
@@ -116,7 +125,7 @@ class StakingComponent extends HTMLElement {
           </div>
       </div>`;
 
-    return TEMPLATE_EMPTY;
+      return this.componentParams.beamx > 0 || this.componentParams.beam > 0 ? TEMPLATE : TEMPLATE_EMPTY;
   } 
 
   render() {
@@ -167,21 +176,24 @@ class StakingComponent extends HTMLElement {
     let value = Big(newValue).div(consts.GLOBAL_CONSTS.GROTHS_IN_BEAM);
     if (name === 'beam-value') {
       this.componentParams.beam = newValue;
-      this.componentParams.beamStr = value.toFixed(2);
+      this.componentParams.beamStr = this.formateValue(value);
     } else if (name === 'beamx-value') {
       this.componentParams.beamx = newValue;
-      this.componentParams.beamxStr = value.toFixed(2);
+      this.componentParams.beamxStr = this.formateValue(value);
     } else if (name === 'loaded') {
       this.componentParams.loaded = newValue;
     } else if (name === 'rate') {
       this.componentParams.rate = newValue;
+    } else if (name === 'beam_total_locked') {
+      this.componentParams.beamTotalLocked = newValue;
+      this.componentParams.beamTotalLockedStr = this.formateValue(value);
     }
     this.render();
   }
 
   
   static get observedAttributes() {
-    return ['beam-value', 'beamx-value', 'loaded', 'rate'];
+    return ['beam-value', 'beamx-value', 'loaded', 'rate', 'beam_total_locked'];
   }
 }
 

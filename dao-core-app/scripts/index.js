@@ -8,17 +8,14 @@ const TIMEOUT = 3000;
 class DaoCore {
     constructor() {
         this.timeout = undefined;
-        this.rate = {
-            value: 0,
-            loaded: false
-        }
         this.pluginData = {
             inTransaction: false,
-            locked_demoX: 0,
-            locked_beams: 0,
+            lockedDemoX: 0,
+            lockedBeams: 0,
             stake: 0,
             inProgress: false,
-            mainLoaded: false
+            mainLoaded: false,
+            beamTotalLocked: 0
         }
 
         $('public-key-popup-component').hide();
@@ -40,9 +37,8 @@ class DaoCore {
             if (xhr.status === 200) {
                 const response = JSON.parse(xhr.response);
                 if (response.beam !== undefined && response.beam.usd !== undefined) {
-                    this.rate.value = response.beam.usd;
-                    this.rate.loaded = true;
-                    console.log(this.rate.value);
+                    const stakingComponent = $('staking-component');
+                    stakingComponent.attr('rate', response.beam.usd);
                 }
             }
         };
@@ -129,11 +125,25 @@ class DaoCore {
         this.refresh(false);
     }
 
+    loadPreallocStats = () => {
+        Utils.callApi("prealloc_totals", "invoke_contract", {
+            create_tx: false,
+            args: "role=manager,action=prealloc_totals,cid=" + CONTRACT_ID
+        });
+    }
+
+    loadFarmStats = () => {
+        Utils.callApi("farm_totals", "invoke_contract", {
+            create_tx: false,
+            args: "role=manager,action=farm_totals,cid=" + CONTRACT_ID
+        });
+    }
+
     loadPreallocated = () => {
         Utils.callApi("prealloc_view", "invoke_contract", {
             create_tx: false,
             args: "role=manager,action=prealloc_view,cid=" + CONTRACT_ID
-        })
+        });
     }
 
     onApiResult = (json) => {    
@@ -167,11 +177,10 @@ class DaoCore {
                 stakingComponent.attr('beam-value', shaderOut.user.beams_locked);
                 stakingComponent.attr('beamx-value', shaderOut.user.beamX);
                 stakingComponent.attr('loaded', this.pluginData.mainLoaded | 0);
-                stakingComponent.attr('rate', this.rate.loaded ? this.rate.value : 0);
                 $('governance-component').attr('emission', shaderOut.farming.emission);
                 
-                this.pluginData.locked_demoX = shaderOut.user.beamX;
-                this.pluginData.locked_beams = shaderOut.user.beams_locked;
+                this.pluginData.lockedDemoX = shaderOut.user.beamX;
+                this.pluginData.lockedBeams = shaderOut.user.beams_locked;
                 this.loadPreallocated();
             } else if (apiCallId === "farm_update" || apiCallId === "prealloc_withdraw") {
                 if (apiResult.raw_data === undefined || apiResult.raw_data.length < 1) {
@@ -193,6 +202,7 @@ class DaoCore {
                 component.attr('received', shaderOut.received);
                 component.attr('avail_total', shaderOut.avail_total);
                 component.attr('avail_remaining', shaderOut.avail_remaining);
+                this.loadFarmStats();
                 this.showStaking();
             } else if (apiCallId === "my_xid") {
                 let shaderOut = this.parseShaderResult(apiResult);
@@ -203,6 +213,24 @@ class DaoCore {
 
                 const component = $('public-key-popup-component');
                 component.attr('key', shaderOut.xid);
+            } else if (apiCallId === "farm_totals") {
+                let shaderOut = this.parseShaderResult(apiResult);
+                
+                if (shaderOut.total === undefined) {
+                    throw "Failed to load farming totals";
+                }
+                const stakingComponent = $('staking-component');
+                stakingComponent.attr('beam_total_locked', shaderOut.beam_locked);
+                this.loadPreallocStats();
+            } else if (apiCallId === "prealloc_totals") {
+                let shaderOut = this.parseShaderResult(apiResult);
+                
+                if (shaderOut.total === undefined) {
+                    throw "Failed to load prealloc totals";
+                }
+
+                const component = $('allocation-component');
+                component.attr('allocated', shaderOut.total);
             }
 
             // if (apiCallId == "tx-list") {
@@ -284,7 +312,7 @@ Utils.onLoad(async (beamAPI) => {
             Utils.callApi("farm_update", "invoke_contract", {
                 create_tx: false,
                 args: "role=manager,action=farm_update,cid=" + CONTRACT_ID + 
-                    ",bLockOrUnlock=0,amountBeamX=" + daoCore.pluginData.locked_demoX
+                    ",bLockOrUnlock=0,amountBeamX=" + daoCore.pluginData.lockedDemoX
             })
         } else if (e.detail.type === 'deposit-popup-open') {
             const component = $('deposit-popup-component');

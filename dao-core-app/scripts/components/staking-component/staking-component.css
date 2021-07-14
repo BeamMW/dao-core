@@ -197,7 +197,7 @@
 
 .withdraw-control {
     margin-left: 33px;
-    margin-right: 81px;
+    margin-right: 122px;
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -263,7 +263,7 @@
     flex-direction: row;
     align-items: center;
     margin-left: auto;
-    margin-right: 155px;
+    margin-right: 195px;
     user-select: none;
     cursor: pointer;
 }
