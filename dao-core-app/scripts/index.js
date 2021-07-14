@@ -309,11 +309,19 @@ Utils.onLoad(async (beamAPI) => {
                 args: "role=manager,action=my_xid"
             });
         } else if (e.detail.type === 'claim-rewards-process') {
-            Utils.callApi("farm_update", "invoke_contract", {
-                create_tx: false,
-                args: "role=manager,action=farm_update,cid=" + CONTRACT_ID + 
-                    ",bLockOrUnlock=0,amountBeamX=" + daoCore.pluginData.lockedDemoX
-            })
+            if (e.detail.is_allocation > 0) {
+                Utils.callApi("prealloc_withdraw", "invoke_contract", {
+                    create_tx: false,
+                    args: "role=manager,action=prealloc_withdraw,cid=" + CONTRACT_ID + 
+                        ",amount=" + e.detail.amount
+                });
+            } else {
+                Utils.callApi("farm_update", "invoke_contract", {
+                    create_tx: false,
+                    args: "role=manager,action=farm_update,cid=" + CONTRACT_ID + 
+                        ",bLockOrUnlock=0,amountBeamX=" + e.detail.amount
+                })
+            }
         } else if (e.detail.type === 'deposit-popup-open') {
             const component = $('deposit-popup-component');
             component.attr('loaded', daoCore.pluginData.mainLoaded | 0);

@@ -10,6 +10,7 @@ class StakingComponent extends HTMLElement {
     rate: 0,
     beamTotalLockedStr: '0',
     beamTotalLocked: 0,
+    loaded: false
   }
 
   constructor() {
@@ -125,7 +126,9 @@ class StakingComponent extends HTMLElement {
           </div>
       </div>`;
 
-      return this.componentParams.beamx > 0 || this.componentParams.beam > 0 ? TEMPLATE : TEMPLATE_EMPTY;
+      return this.componentParams.loaded 
+        ? (this.componentParams.beamx > 0 || this.componentParams.beam > 0 ? TEMPLATE : TEMPLATE_EMPTY)
+        : TEMPLATE_LOADING;
   } 
 
   render() {
@@ -145,7 +148,9 @@ class StakingComponent extends HTMLElement {
 
     $('#staking-claim-rewards').click((ev) => {
       const component = $('claim-rewards-popup-component');
-      component.attr('value', this.componentParams.beamxStr);
+      component.attr('is_allocation', 0);
+      component.attr('value_str', this.componentParams.beamxStr);
+      component.attr('value', this.componentParams.beamx);
     });
 
     $('#empty-deposit, #deposit').click((ev) => {

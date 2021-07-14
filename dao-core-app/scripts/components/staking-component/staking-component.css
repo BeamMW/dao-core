@@ -258,7 +258,7 @@
     white-space: nowrap;
 }
 
-.farmed-claim{
+.farmed-claim {
     display: flex;
     flex-direction: row;
     align-items: center;

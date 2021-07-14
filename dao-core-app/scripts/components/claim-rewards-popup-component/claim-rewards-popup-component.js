@@ -2,7 +2,9 @@ import Utils from "./../../libs/utils.js";
 
 class ClaimRewardsPopupComponent extends HTMLElement {
     componentParams = {
-      beamxValue: ''
+      beamxValueStr: '',
+      beamxValue: 0,
+      isAllocation: 0
     }
 
     constructor() {
@@ -17,8 +19,8 @@ class ClaimRewardsPopupComponent extends HTMLElement {
                 <div class="popup__value claim-rewards">
                     <span class="claim-rewards-value">
                         You have farmed 
-                        <span class="bold">${this.componentParams.beamxValue} BEAMX</span>
-                        available for claim 
+                        <span class="bold">${this.componentParams.beamxValueStr} BEAMX</span>
+                        available for claim.
                     </span>
                 </div>
                 <div class="popup__content__controls claim-controls">
@@ -42,7 +44,7 @@ class ClaimRewardsPopupComponent extends HTMLElement {
             </div>
         </div>`;
 
-      return TEMPLATE;
+        return TEMPLATE;
     }
   
     render() {
@@ -56,8 +58,9 @@ class ClaimRewardsPopupComponent extends HTMLElement {
             $('#claim-confirm').click(() => {
                 let event = new CustomEvent("global-event", {
                     detail: {
-                      type: 'claim-rewards-process'
-                      //todo send amount
+                        type: 'claim-rewards-process',
+                        is_allocation: this.componentParams.isAllocation,
+                        amount: this.componentParams.beamxValue
                     }
                   });
                 document.dispatchEvent(event);
@@ -71,24 +74,24 @@ class ClaimRewardsPopupComponent extends HTMLElement {
     };
   
     connectedCallback() {
-      this.render();
+        this.render();
     }
     
     attributeChangedCallback(name, oldValue, newValue) {    
-        let value = '';
-        switch(name) {
-            case 'value':
-                this.componentParams.beamxValue = newValue;
-                $('claim-rewards-popup-component').show();
-                this.render();
-
-                break;
+        if (name === 'value') {
+            this.componentParams.beamxValue = newValue;
+        } else if (name === 'value_str') {
+            this.componentParams.beamxValueStr = newValue;
+            $('claim-rewards-popup-component').show();
+        } else if ( name === 'is_allocation') {
+            this.componentParams.isAllocation = newValue;
         }
+        this.render();
     }
   
     
     static get observedAttributes() {
-      return ['value'];
+        return ['value', 'is_allocation', 'value_str'];
     }
   }
 
