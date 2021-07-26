@@ -118,6 +118,7 @@ ON_METHOD(manager, view)
         DemoXdao::s_SID_1,
         DemoXdao::s_SID_2,
         DemoXdao::s_SID_3,
+        DemoXdao::s_SID_4,
         DemoXdao::s_SID // latest version
     };
 
