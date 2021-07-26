@@ -12,9 +12,11 @@ namespace DemoXdao
     static const ShaderID s_SID_1 = { 0x37,0x07,0xa0,0x37,0x53,0xe5,0x19,0x79,0xfe,0xc8,0x53,0x9a,0x85,0x0f,0x0d,0x7c,0x98,0x95,0xde,0x57,0x3b,0x84,0xf8,0x22,0x10,0x2b,0xb6,0x08,0x84,0x94,0x27,0x9a };
     static const ShaderID s_SID_2 = { 0xc8,0xd9,0x7b,0xe0,0x99,0x77,0xb9,0x30,0xa8,0x88,0x1c,0x3c,0xb6,0xc8,0x7a,0x6b,0x62,0x07,0x2a,0x71,0xfa,0x34,0xf9,0x67,0x49,0x6b,0xbb,0x0d,0x0c,0xa1,0x62,0xfe };
     static const ShaderID s_SID_3 = { 0xc4,0x02,0xd8,0x40,0x39,0x2b,0x5e,0x72,0x35,0x16,0x7f,0xb6,0x99,0x8f,0xb5,0xea,0x26,0xa8,0xce,0x47,0xba,0x5d,0x4a,0x4a,0x88,0xba,0xa7,0xf2,0x98,0x37,0x90,0xad };
+    static const ShaderID s_SID_4 = { 0x0f,0xa0,0x9e,0xb9,0x93,0xa5,0x10,0xe1,0x83,0x5a,0x2e,0xac,0x57,0x59,0xe9,0x67,0x87,0x72,0x84,0x0d,0x10,0xe3,0xf2,0x32,0x59,0x4d,0x98,0xd5,0x43,0x34,0x86,0x6c };
 
     // current version
-    #include "contract_sid.i"
+    static const ShaderID s_SID = { 0x33,0x5e,0x56,0x5e,0x40,0xbc,0x44,0x86,0xb5,0x28,0x3f,0xb0,0x4e,0xde,0xe1,0x49,0xb9,0x24,0x79,0x05,0xd3,0xc1,0xb2,0x68,0xb0,0xbc,0x5c,0xe7,0xd8,0x31,0xc2,0xd2 };
+
 }
 
 #define DemoXdao_manager_deploy_version(macro)
@@ -27,11 +29,22 @@ namespace DemoXdao
 #define DemoXdao_manager_farm_view(macro) \
     macro(ContractID, cid)
 
+#define DemoXdao_manager_farm_get_yield(macro) \
+    macro(ContractID, cid) \
+    macro(Amount, amount) \
+    macro(Height, hPeriod)
+
+#define DemoXdao_manager_farm_totals(macro) \
+    macro(ContractID, cid)
+
 #define DemoXdao_manager_farm_update(macro) \
     macro(ContractID, cid) \
     macro(Amount, amountBeamX) \
     macro(Amount, amountBeam) \
     macro(uint32_t, bLockOrUnlock) \
+
+#define DemoXdao_manager_prealloc_totals(macro) \
+    macro(ContractID, cid)
 
 #define DemoXdao_manager_prealloc_view(macro) \
     macro(ContractID, cid)
@@ -61,9 +74,12 @@ namespace DemoXdao
     macro(manager, view_params) \
     macro(manager, view_stake) \
     macro(manager, my_xid) \
+    macro(manager, prealloc_totals) \
     macro(manager, prealloc_view) \
     macro(manager, prealloc_withdraw) \
     macro(manager, farm_view) \
+    macro(manager, farm_get_yield) \
+    macro(manager, farm_totals) \
     macro(manager, farm_update)
 
 #define DemoXdaoRoles_All(macro) \
@@ -232,12 +248,64 @@ ON_METHOD(manager, my_xid)
     Env::DocAddBlob_T("xid", pk);
 }
 
+template <typename TX, typename TY>
+TY CalculateFraction(TY val, TX x, TX xTotal)
+{
+    MultiPrecision::UInt<sizeof(TY) / sizeof(MultiPrecision::Word)> res;
+    res.SetDiv(MultiPrecision::From(x) * MultiPrecision::From(val), MultiPrecision::From(xTotal));
+
+    return res.template Get<0, TY>();
+}
+
+Amount CalculatePreallocAvail(const ContractID& cid, Amount val)
+{
+    Env::Key_T<uint8_t> prk;
+    _POD_(prk.m_Prefix.m_Cid) = cid;
+    prk.m_KeyInContract = DemoXdao::Preallocated::s_Key;
+
+    DemoXdao::Preallocated pr;
+    if (!Env::VarReader::Read_T(prk, pr))
+        return 0;
+
+    Height dh = Env::get_Height() - pr.m_h0;
+    if (dh >= pr.s_Duration)
+        return val;
+
+    return CalculateFraction(val, dh, pr.s_Duration);
+}
+
+ON_METHOD(manager, prealloc_totals)
+{
+    Amount valTotal = 0, valReceived = 0;
+
+    Env::Key_T<DemoXdao::Preallocated::User::Key> k0, k1;
+    _POD_(k0.m_Prefix.m_Cid) = cid;
+    _POD_(k0.m_KeyInContract.m_Pk).SetZero();
+    _POD_(k1.m_Prefix.m_Cid) = cid;
+    _POD_(k1.m_KeyInContract.m_Pk).SetObject(0xff);
+
+    for (Env::VarReader r(k0, k1); ; )
+    {
+        DemoXdao::Preallocated::User pu;
+        if (!r.MoveNext_T(k0, pu))
+            break;
+
+        valReceived += pu.m_Received;
+        valTotal += pu.m_Total;
+    }
+
+    // TODO: after the vesting period is over and the user withdraws all the preallocated - its record is erased completely.
+    // Account for this. valTotal should be raised to the expected, valReceived raise by the same value as well
+
+    Amount valAvail = CalculatePreallocAvail(cid, valTotal);
+
+    Env::DocAddNum("total", valTotal);
+    Env::DocAddNum("avail", valAvail);
+    Env::DocAddNum("received", valReceived);
+}
+
 ON_METHOD(manager, prealloc_view)
 {
-    auto aid = get_TrgAid(cid);
-    if (!aid)
-        return;
-
     Env::Key_T<DemoXdao::Preallocated::User::Key> puk;
     _POD_(puk.m_Prefix.m_Cid) = cid;
     Env::DerivePk(puk.m_KeyInContract.m_Pk, g_szXid, sizeof(g_szXid));
@@ -249,22 +317,8 @@ ON_METHOD(manager, prealloc_view)
         Env::DocAddNum("received", pu.m_Received);
 
         // calculate the maximum available
-        Amount nMaxAvail = 0;
+        Amount nMaxAvail = CalculatePreallocAvail(cid, pu.m_Total);
 
-        Env::Key_T<uint8_t> prk;
-        _POD_(prk.m_Prefix.m_Cid) = cid;
-        prk.m_KeyInContract = DemoXdao::Preallocated::s_Key;
-
-        DemoXdao::Preallocated pr;
-        if (Env::VarReader::Read_T(prk, pr))
-        {
-            Height dh = std::min(Env::get_Height() - pr.m_h0, pr.s_Duration);
-
-            MultiPrecision::UInt<2> maxVal;
-            maxVal.SetDiv(MultiPrecision::From(dh) * MultiPrecision::From(pu.m_Total), MultiPrecision::From(pr.s_Duration));
-
-            nMaxAvail = (((uint64_t) maxVal.get_Val<2>()) << 32) | maxVal.get_Val<1>();
-        }
 
         Env::DocAddNum("avail_total", nMaxAvail);
         Env::DocAddNum("avail_remaining", (nMaxAvail> pu.m_Received) ? (nMaxAvail - pu.m_Received) : 0);
@@ -293,43 +347,47 @@ ON_METHOD(manager, prealloc_withdraw)
     Env::GenerateKernel(&cid, arg.s_iMethod, &arg, sizeof(arg), &fc, 1, &sig, 1, "Get preallocated demoX tokens", 0);
 }
 
-ON_METHOD(manager, farm_view)
+void GetFarmingState(const ContractID& cid, DemoXdao::Farming::State& fs)
 {
-    auto aid = get_TrgAid(cid);
-    if (!aid)
-        return;
-
     Height h = Env::get_Height();
 
-    DemoXdao::Farming::State fs;
+    Env::Key_T<uint8_t> fsk;
+    _POD_(fsk.m_Prefix.m_Cid) = cid;
+    fsk.m_KeyInContract = DemoXdao::Farming::s_Key;
+
+    if (!Env::VarReader::Read_T(fsk, fs))
+        _POD_(fs).SetZero();
+    else
+        fs.Update(h);
+
+    fs.m_hLast = h;
+}
+
+void GetFarmingState(const ContractID& cid, DemoXdao::Farming::State& fs, DemoXdao::Farming::UserPos& fup)
+{
+    GetFarmingState(cid, fs);
+
+    Env::Key_T<DemoXdao::Farming::UserPos::Key> fupk;
+    _POD_(fupk.m_Prefix.m_Cid) = cid;
+    Env::DerivePk(fupk.m_KeyInContract.m_Pk, &cid, sizeof(cid));
+
+    if (!Env::VarReader::Read_T(fupk, fup))
     {
-        Env::Key_T<uint8_t> fsk;
-        _POD_(fsk.m_Prefix.m_Cid) = cid;
-        fsk.m_KeyInContract = DemoXdao::Farming::s_Key;
+        _POD_(fup).SetZero();
+        fup.m_SigmaLast = fs.m_Sigma;
+    }
+}
 
-        if (!Env::VarReader::Read_T(fsk, fs))
-            _POD_(fs).SetZero();
-        else
-            fs.Update(h);
+ON_METHOD(manager, farm_view)
+{
+    DemoXdao::Farming::State fs;
+    DemoXdao::Farming::UserPos fup;
+    GetFarmingState(cid, fs, fup);
 
-        fs.m_hLast = h;
-
+    {
         Env::DocGroup gr("farming");
         Env::DocAddNum("duation", fs.m_hTotal);
         Env::DocAddNum("emission", fs.get_EmissionSoFar());
-    }
-
-    DemoXdao::Farming::UserPos fup;
-    {
-        Env::Key_T<DemoXdao::Farming::UserPos::Key> fupk;
-        _POD_(fupk.m_Prefix.m_Cid) = cid;
-        Env::DerivePk(fupk.m_KeyInContract.m_Pk, &cid, sizeof(cid));
-
-        if (!Env::VarReader::Read_T(fupk, fup))
-        {
-            _POD_(fup).SetZero();
-            fup.m_SigmaLast = fs.m_Sigma;
-        }
     }
 
     {
@@ -341,6 +399,58 @@ ON_METHOD(manager, farm_view)
         Env::DocAddNum("beamX_recent", val);
         Env::DocAddNum("beamX", fup.m_BeamX + val);
     }
+}
+
+ON_METHOD(manager, farm_get_yield)
+{
+    DemoXdao::Farming::State fs;
+    DemoXdao::Farming::UserPos fup;
+    GetFarmingState(cid, fs, fup);
+
+    fs.RemoveFraction(fup);
+
+    DemoXdao::Farming::Weight::Type w = DemoXdao::Farming::Weight::Calculate(amount);
+    fs.m_WeightTotal += w;
+
+    _POD_(fup.m_SigmaLast) = fs.m_Sigma;
+    fup.m_Beam = amount;
+
+    fs.Update(fs.m_hLast + hPeriod);
+
+    Amount res = fs.RemoveFraction(fup);
+
+    Env::DocAddNum("yield", res);
+}
+
+ON_METHOD(manager, farm_totals)
+{
+    DemoXdao::Farming::State fs;
+    GetFarmingState(cid, fs);
+    Amount beamLocked = 0, beamXinternal = 0;
+
+    Env::Key_T<DemoXdao::Farming::UserPos::Key> k0, k1;
+    _POD_(k0.m_Prefix.m_Cid) = cid;
+    _POD_(k0.m_KeyInContract.m_Pk).SetZero();
+    _POD_(k1.m_Prefix.m_Cid) = cid;
+    _POD_(k1.m_KeyInContract.m_Pk).SetObject(0xff);
+
+    for (Env::VarReader r(k0, k1); ; )
+    {
+        DemoXdao::Farming::UserPos fup;
+        if (!r.MoveNext_T(k0, fup))
+            break;
+
+        beamXinternal += fup.m_BeamX; // already assigned to the user, but not claimed yet
+        beamLocked += fup.m_Beam;
+    }
+
+
+
+    Env::DocAddNum("duation", fs.m_hTotal);
+    Env::DocAddNum("total", fs.s_Emission);
+    Env::DocAddNum("avail", fs.get_EmissionSoFar());
+    Env::DocAddNum("received", fs.m_TotalDistributed - beamXinternal);
+    Env::DocAddNum("beam_locked", beamLocked);
 }
 
 ON_METHOD(manager, farm_update)
