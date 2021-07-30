@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.18)
+cmake_minimum_required(VERSION 3.17)
 
 add_test_snippet(shader_test bvm beam)
 target_include_directories(shader_test PUBLIC ${PROJECT_SOURCE_DIR}/shaders)

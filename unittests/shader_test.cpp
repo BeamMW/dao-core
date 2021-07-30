@@ -87,7 +87,7 @@ namespace beam {
 			ContractID m_cidDemoXdao;
 
 
-			void CallFar(const ContractID& cid, uint32_t iMethod, Wasm::Word pArgs) override
+			void CallFar(const ContractID& cid, uint32_t iMethod, Wasm::Word pArgs, uint8_t bInheritContext) override
 			{
 
 				if (cid == m_cidDemoXdao)
@@ -101,7 +101,7 @@ namespace beam {
 					//}
 				}
 
-				ProcessorContract::CallFar(cid, iMethod, pArgs);
+				ProcessorContract::CallFar(cid, iMethod, pArgs, bInheritContext);
 			}
 
 
