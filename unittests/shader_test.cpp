@@ -14,8 +14,8 @@
 
 #define HOST_BUILD
 
-#include "../../beam/core/block_rw.h"
-#include "../../beam/bvm/bvm2_impl.h"
+#include "../beam/core/block_rw.h"
+#include "../beam/bvm/bvm2_impl.h"
 #include <cmath>
 
 namespace Shaders {
