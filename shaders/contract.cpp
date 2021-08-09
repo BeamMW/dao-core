@@ -71,7 +71,7 @@ void AllocateAll(const DemoXdao::State& s)
 
 BEAM_EXPORT void Ctor(const void*)
 {
-    if (Env::get_CallDepth() > 1)
+    //if (Env::get_CallDepth() > 1)
     {
         DemoXdao::State s;
 

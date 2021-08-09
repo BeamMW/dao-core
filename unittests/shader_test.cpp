@@ -310,7 +310,7 @@ namespace beam {
 			}
 
 			// the following is disabled, since the contract in this test is standalone, not under Upgradable, hence it doesn' allocate anything in c'tor
-	/*
+	
 			{
 				Shaders::DemoXdao::GetPreallocated args;
 				ZeroObject(args);
@@ -322,9 +322,12 @@ namespace beam {
 				verify_test(RunGuarded_T(m_cidDemoXdao, args.s_iMethod, args)); // ok
 
 				args.m_Amount = 31000 / 2 * Shaders::g_Beam2Groth;
-				verify_test(!RunGuarded_T(m_cidDemoXdao, args.s_iMethod, args)); // too much
+				verify_test(!RunGuarded_T(m_cidDemoXdao, args.s_iMethod, args)); // too much for now
+
+				m_Height += Shaders::DemoXdao::Preallocated::s_Duration * 2 / 3;
+				verify_test(RunGuarded_T(m_cidDemoXdao, args.s_iMethod, args)); // now ok
 			}
-	*/
+	
 		}
 
 
