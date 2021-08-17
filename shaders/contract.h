@@ -13,9 +13,6 @@ namespace DemoXdao
         static const uint8_t s_Key = 0;
 
         AssetID m_Aid;
-
-        static const Amount s_TotalEmission = g_Beam2Groth * 10000;
-        static const Amount s_ReleasePerLock = g_Beam2Groth * 10;
     };
 
     namespace Farming
@@ -55,8 +52,8 @@ namespace DemoXdao
 
         struct State
         {
-            static const Amount s_Emission = g_Beam2Groth * 1000000;
-            static const Height s_Duration = 1440 * 120;
+            static const Amount s_Emission = g_Beam2Groth * 1'000'000;
+            static const Height s_Duration = 1440 * 365 / 4; // 3 months
 
             static const uint32_t s_EmissionPerBlock = static_cast<uint32_t>(s_Emission / s_Duration);
             static_assert(s_Emission - s_EmissionPerBlock * s_Duration < g_Beam2Groth, "the round-off error should be low");
@@ -153,7 +150,8 @@ namespace DemoXdao
             Amount m_Received;
         };
 
-        static const Height s_Duration = 1440 * 180;
+        static const Height s_Duration = 1440 * 365 * 2; // 2 years
+        static const Amount s_Emission = g_Beam2Groth * 99'000'000;
 
         Height m_h0;
     };
