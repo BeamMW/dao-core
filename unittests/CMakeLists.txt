@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.17)
 add_test_snippet(shader_test bvm beam)
 target_include_directories(shader_test PUBLIC ${PROJECT_SOURCE_DIR}/shaders)
 
+configure_file("../beam/bvm/Shaders/upgradable/contract.wasm" "${CMAKE_CURRENT_BINARY_DIR}/upgradable/contract.wasm" COPYONLY)
+
 
 add_shader(contract ${PROJECT_SOURCE_DIR}/shaders)
 add_shader(app ${PROJECT_SOURCE_DIR}/shaders)

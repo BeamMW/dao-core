@@ -29,6 +29,7 @@ namespace Shaders {
 #include "Shaders/common.h"
 
 #include "../shaders/contract.h"
+#include "../beam/bvm/Shaders/upgradable/contract.h"
 
 
 	template <bool bToShader> void Convert(DemoXdao::UpdPosFarming& x) {
@@ -39,6 +40,9 @@ namespace Shaders {
 		ConvertOrd<bToShader>(x.m_Amount);
 	}
 
+	template <bool bToShader> void Convert(Upgradable::Create& x) {
+		ConvertOrd<bToShader>(x.m_hMinUpgadeDelay);
+	}
 
 	namespace DemoXdao {
 #include "../shaders/contract_sid.i"
@@ -81,17 +85,19 @@ namespace beam {
 
 			struct Code
 			{
-				ByteBuffer m_DemoXdao;
+				ByteBuffer m_Upgradable;
+				ByteBuffer m_Dao;
 
 			} m_Code;
 
-			ContractID m_cidDemoXdao;
+			ContractID m_cidDao_Impl; // bytecode only, no live contract there
+			ContractID m_cidDao_Upgr;
 
 
 			void CallFar(const ContractID& cid, uint32_t iMethod, Wasm::Word pArgs, uint8_t bInheritContext) override
 			{
 
-				if (cid == m_cidDemoXdao)
+				if (cid == m_cidDao_Impl)
 				{
 					//TempFrame f(*this, cid);
 					//switch (iMethod)
@@ -125,7 +131,8 @@ namespace beam {
 
 		void MyProcessor::TestAll()
 		{
-			AddCode(m_Code.m_DemoXdao, "contract.wasm");
+			AddCode(m_Code.m_Dao, "contract.wasm");
+			AddCode(m_Code.m_Upgradable, "upgradable/contract.wasm");
 
 			TestDemoXdao();
 		}
@@ -275,12 +282,24 @@ namespace beam {
 			//lg.Generate(Shaders::g_Beam2Groth * 16, Shaders::g_Beam2Groth * 1000000, 0.1);
 			//lg.Normalize(1000000);
 
-			Zero_ zero;
-			verify_test(ContractCreate_T(m_cidDemoXdao, m_Code.m_DemoXdao, zero));
-
 			bvm2::ShaderID sid;
-			bvm2::get_ShaderID(sid, m_Code.m_DemoXdao);
+			bvm2::get_ShaderID(sid, m_Code.m_Dao);
 			VERIFY_ID(Shaders::DemoXdao::s_SID, sid);
+
+			// 1st stage - deploy the implementation. It's not a 'live' contract yet
+			Zero_ zero;
+			verify_test(ContractCreate_T(m_cidDao_Impl, m_Code.m_Dao, zero));
+
+			// 2nd stage - deploy Upgradable contract, with the above implementation at the beginning
+			{
+				Shaders::Upgradable::Create args;
+				args.m_Cid = m_cidDao_Impl;
+				args.m_hMinUpgadeDelay = 1440 * 20; // min version upgrade delay, for future upgrades
+				args.m_Pk = Zero; // owner, who is authorized to schedule future upgrades
+
+				verify_test(ContractCreate_T(m_cidDao_Upgr, m_Code.m_Upgradable, args));
+			}
+
 
 			for (uint32_t i = 0; i < 10; i++)
 			{
@@ -290,7 +309,7 @@ namespace beam {
 				args.m_Beam = Shaders::g_Beam2Groth * 20000 * (i + 3);
 				args.m_BeamLock = 1;
 				args.m_Pk.m_X = i;
-				verify_test(RunGuarded_T(m_cidDemoXdao, args.s_iMethod, args));
+				verify_test(RunGuarded_T(m_cidDao_Upgr, args.s_iMethod, args));
 
 				if (i & 1)
 					m_Height += 1000;
@@ -303,7 +322,7 @@ namespace beam {
 
 				args.m_Beam = Shaders::g_Beam2Groth * 20000 * (i + 3);
 				args.m_Pk.m_X = i;
-				verify_test(RunGuarded_T(m_cidDemoXdao, args.s_iMethod, args));
+				verify_test(RunGuarded_T(m_cidDao_Upgr, args.s_iMethod, args));
 
 				if (i & 1)
 					m_Height += 1000;
@@ -316,16 +335,16 @@ namespace beam {
 				ZeroObject(args);
 				args.m_Amount = 50;
 				Cast::Reinterpret<beam::uintBig_t<33> >(args.m_Pk).Scan("8bb3375b455d9c577134b00e8b0b108a29ce2bc0fce929049306cf4fed723b7d00");
-				verify_test(!RunGuarded_T(m_cidDemoXdao, args.s_iMethod, args)); // wrong pk
+				verify_test(!RunGuarded_T(m_cidDao_Upgr, args.s_iMethod, args)); // wrong pk
 
 				Cast::Reinterpret<beam::uintBig_t<33> >(args.m_Pk).Scan("8bb3375b455d9c577134b00e8b0b108a29ce2bc0fce929049306cf4fed723b7d01");
-				verify_test(RunGuarded_T(m_cidDemoXdao, args.s_iMethod, args)); // ok
+				verify_test(RunGuarded_T(m_cidDao_Upgr, args.s_iMethod, args)); // ok
 
 				args.m_Amount = 31000 / 2 * Shaders::g_Beam2Groth;
-				verify_test(!RunGuarded_T(m_cidDemoXdao, args.s_iMethod, args)); // too much for now
+				verify_test(!RunGuarded_T(m_cidDao_Upgr, args.s_iMethod, args)); // too much for now
 
 				m_Height += Shaders::DemoXdao::Preallocated::s_Duration * 2 / 3;
-				verify_test(RunGuarded_T(m_cidDemoXdao, args.s_iMethod, args)); // now ok
+				verify_test(RunGuarded_T(m_cidDao_Upgr, args.s_iMethod, args)); // now ok
 			}
 	
 		}
